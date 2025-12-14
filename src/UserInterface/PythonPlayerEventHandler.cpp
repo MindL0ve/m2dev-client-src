@@ -132,25 +132,9 @@ void CPythonPlayerEventHandler::OnChangeShape()
 	CPythonPlayer::Instance().NEW_Stop();
 }
 
-#ifdef FIX_POS_SYNC
-void CPythonPlayerEventHandler::OnHit(UINT uSkill, CActorInstance& rkActorVictim, BOOL isSendPacket, CActorInstance::BlendingPosition* sBlending)
-#else
 void CPythonPlayerEventHandler::OnHit(UINT uSkill, CActorInstance& rkActorVictim, BOOL isSendPacket)
-#endif
 {
 	DWORD dwVIDVictim=rkActorVictim.GetVirtualID();
-
-#ifdef FIX_POS_SYNC
-	CPythonCharacterManager::Instance().AdjustCollisionWithOtherObjects(&rkActorVictim);
-	CActorInstance::BlendingPosition kBlendingPacket;
-	memset(&kBlendingPacket, 0, sizeof(kBlendingPacket));
-
-	kBlendingPacket.source = rkActorVictim.NEW_GetCurPixelPositionRef();
-	if (rkActorVictim.IsPushing()) {
-		kBlendingPacket.dest = rkActorVictim.NEW_GetLastPixelPositionRef();
-		kBlendingPacket.duration = sBlending->duration;
-	}
-#endif
 
 	// Update Target
 	CPythonPlayer::Instance().SetTarget(dwVIDVictim, FALSE);
@@ -181,11 +165,7 @@ void CPythonPlayerEventHandler::OnHit(UINT uSkill, CActorInstance& rkActorVictim
 		s_prevTimed[dwVIDVictim] = curTime;
 #endif
 		CPythonNetworkStream& rkStream=CPythonNetworkStream::Instance();
-#ifdef FIX_POS_SYNC
-		rkStream.SendAttackPacket(uSkill, dwVIDVictim, isSendPacket, kBlendingPacket);
-#else
 		rkStream.SendAttackPacket(uSkill, dwVIDVictim);
-#endif
 	}
 
 	if (!rkActorVictim.IsPushing())

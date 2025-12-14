@@ -516,18 +516,6 @@ typedef struct command_attack
 	uint32_t	dwVictimVID;	// 적 VID
 	uint8_t	bCRCMagicCubeProcPiece;
 	uint8_t	bCRCMagicCubeFilePiece;
-#ifdef FIX_POS_SYNC
-	BOOL    bPacket;
-	LONG    lSX;
-	LONG    lSY;
-	LONG    lX;
-	LONG    lY;
-	float    fSyncDestX;
-	float    fSyncDestY;
-	DWORD    dwBlendDuration;
-	DWORD    dwComboMotion;
-	DWORD    dwTime;
-#endif
 } TPacketCGAttack;
 
 typedef struct command_chat
@@ -1882,16 +1870,6 @@ typedef struct packet_attack
     uint32_t       dwVID;
     uint32_t       dwVictimVID;    // 적 VID
     uint8_t        bType;          // 공격 유형
-#ifdef FIX_POS_SYNC
-	BOOL			bPacket;
-	LONG			lSX;
-	LONG			lSY;
-	LONG			lX;
-	LONG			lY;
-	float			fSyncDestX;
-	float			fSyncDestY;
-	DWORD			dwBlendDuration;
-#endif
 } TPacketGCAttack;
 
 typedef struct packet_c2c

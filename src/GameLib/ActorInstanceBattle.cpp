@@ -314,76 +314,6 @@ void CActorInstance::__ClearCombo()
 	m_pkCurRaceMotionData = NULL;
 }
 
-#ifdef FIX_POS_SYNC
-void CActorInstance::__Push(const TPixelPosition& c_rkPPosDst, unsigned int unDuration)
-{
-	DWORD dwVID = GetVirtualID();
-	Tracenf("VID %d SyncPixelPosition %f %f", dwVID, c_rkPPosDst.x, c_rkPPosDst.y);
-
-	if (unDuration == 0)
-		unDuration = 1000;
-
-	const D3DXVECTOR3& c_rv3Src = GetPosition();
-	const D3DXVECTOR3 c_v3Delta = c_rkPPosDst - c_rv3Src;
-
-	SetBlendingPosition(c_rkPPostDst, float(unDuration) / 1000);
-
-	if (!IsUsingSkill() && !IsResistFallen())
-	{
-		int len = sqrt(c_v3Delta.x * c_v3Delta.x + c_v3Delta.y * c_v3Delta.y);
-		if (len > 150.0f)
-		{
-			InterceptOnceMotion(CRaceMotionData::NAME_DAMAGE_FLYING);
-			PushOnceMotion(CRaceMotionData::NAME_STAND_UP);
-		}
-	}
-}
-
-void CActorInstance::ClientAttack(DWORD dwVID)
-{
-	if (m_mapAttackSync.find(dwVID) == m_mapAttackSync.end()) {
-		m_mapAttackSync.insert(std::make_pair(dwVID, -1));
-	}
-	else
-	{
-		if (m_mapAttackSync[dwVID] == 1)
-		{
-			m_mapAttackSync.erase(dwVID);
-			return;
-		}
-		m_mapAttackSync[dwVID]--;
-	}
-}
-
-// server attack increases
-void CActorInstance::ServerAttack(DWORD dwVID)
-{
-	if (m_mapAttackSync.find(dwVID) == m_mapAttackSync.end()) {
-		m_mapAttackSync.insert(std::make_pair(dwVID, 1));
-	}
-	else
-	{
-		if (m_mapAttackSync[dwVID] == -1)
-		{
-			m_mapAttackSync.erase(dwVID);
-			return;
-		}
-		m_mapAttackSync[dwVID]++;
-	}
-}
-
-bool CActorInstance::ProcessingClientAttack(DWORD dwVID)
-{
-	return m_mapAttackSync.find(dwVID) != m_mapAttackSync.end() && m_mapAttackSync[dwVID] < 0;
-}
-
-//
-bool CActorInstance::ServerAttackCameFirst(DWORD dwVID)
-{
-	return m_mapAttackSync.find(dwVID) != m_mapAttackSync.end() && m_mapAttackSync[dwVID] > 0;
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOL CActorInstance::isAttacking()
@@ -680,33 +610,14 @@ void CActorInstance::__ProcessDataAttackSuccess(const NRaceData::TAttackData & c
 
 	InsertDelay(c_rAttackData.fStiffenTime);
 
-#ifdef FIX_POS_SYNC
-	BlendingPosition sBlending;
-	memset(&sBlending, 0, sizeof(sBlending));
-	sBlending.source = rVictim.NEW_GetCurPixelPositionRef();
-#endif
-
 	if (__CanPushDestActor(rVictim) && c_rAttackData.fExternalForce > 0.0f)
 	{
-#ifdef FIX_POS_SYNC
-		const bool bServerAttackAlreadyCame = rVictim.ServerAttackCameFirst(GetVirtualID());
-		rVictim.ClientAttack(GetVirtualID());
+		__PushCircle(rVictim);
 
-		if (!bServerAttackAlreadyCame)
-		{
-#endif
-			__PushCircle(rVictim);
-
-			// VICTIM_COLLISION_TEST
-			const D3DXVECTOR3& kVictimPos = rVictim.GetPosition();
-			rVictim.m_PhysicsObject.IncreaseExternalForce(kVictimPos, c_rAttackData.fExternalForce); //*nForceRatio/100.0f);
-			// VICTIM_COLLISION_TEST_END
-
-#ifdef FIX_POS_SYNC
-			rVictim.GetBlendingPosition(&(sBlending.dest));
-			sBlending.duration = rVictim.m_PhysicsObject.GetRemainingTime();
-		}
-#endif
+		// VICTIM_COLLISION_TEST
+		const D3DXVECTOR3& kVictimPos = rVictim.GetPosition();
+		rVictim.m_PhysicsObject.IncreaseExternalForce(kVictimPos, c_rAttackData.fExternalForce); //*nForceRatio/100.0f);
+		// VICTIM_COLLISION_TEST_END
 	}
 
 	// Invisible Time
@@ -778,11 +689,7 @@ void CActorInstance::__ProcessDataAttackSuccess(const NRaceData::TAttackData & c
 		}
 		else if (NRaceData::HIT_TYPE_GREAT == c_rAttackData.iHittingType)
 		{
-#ifdef FIX_POS_SYNC
-			__HitGreate(rVictim, uiSkill);
-#else
 			__HitGreate(rVictim);
-#endif
 		}
 		else
 		{
@@ -912,18 +819,10 @@ void CActorInstance::__HitGood(CActorInstance& rVictim)
 	}
 }
 
-#ifdef FIX_POS_SYNC
-void CActorInstance::__HitGreate(CActorInstance& rVictim, UINT uiSkill)
-#else
 void CActorInstance::__HitGreate(CActorInstance& rVictim)
-#endif
 {
 	// DISABLE_KNOCKDOWN_ATTACK
-#ifdef FIX_POS_SYNC
-	if (!uiSkill && rVictim.IsKnockDown())
-#else
 	if (rVictim.IsKnockDown())
-#endif
 		return;
 	if (rVictim.__IsStandUpMotion())
 		return;
@@ -1007,24 +906,16 @@ void CActorInstance::GetBlendingPosition(TPixelPosition * pPosition)
 {
 	if (m_PhysicsObject.isBlending())
 	{
-#ifdef FIX_POS_SYNC
-		m_PhysicsObject.GetFinalPosition(pPosition);
-#else
 		m_PhysicsObject.GetLastPosition(pPosition);
 		pPosition->x += m_x;
 		pPosition->y += m_y;
 		pPosition->z += m_z;
-#endif
 	}
 	else
 	{
-#ifdef FIX_POS_SYNC
-		GetPixelPosition(pPosition);
-#else
 		pPosition->x = m_x;
 		pPosition->y = m_y;
 		pPosition->z = m_z;
-#endif
 	}
 }
 
