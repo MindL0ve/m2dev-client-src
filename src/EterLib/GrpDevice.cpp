@@ -2,6 +2,7 @@
 #include "GrpDevice.h"
 #include "EterBase/Stl.h"
 #include "EterBase/Debug.h"
+#include <intrin.h>
 
 bool CPU_HAS_SSE2 = false;
 bool GRAPHICS_CAPS_CAN_NOT_DRAW_LINE = false;
