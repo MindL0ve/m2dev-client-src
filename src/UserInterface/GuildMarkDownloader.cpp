@@ -2,7 +2,6 @@
 #include "GuildMarkDownloader.h"
 #include "PythonCharacterManager.h"
 #include "Packet.h"
-#include "Test.h"
 
 // MARK_BUG_FIX
 struct SMarkIndex
@@ -238,14 +237,12 @@ bool CGuildMarkDownloader::__LoginState_RecvPing()
 
 	TPacketCGPong kPacketPong;
 	kPacketPong.bHeader = HEADER_CG_PONG;
+	kPacketPong.bSequence = GetNextSequence();
 
 	if (!Send(sizeof(TPacketCGPong), &kPacketPong))
 		return false;
 
-	if (IsSecurityMode())
-		return SendSequence();
-	else
-		return true;
+	return true;
 }
 
 bool CGuildMarkDownloader::__LoginState_RecvPhase()
@@ -258,7 +255,7 @@ bool CGuildMarkDownloader::__LoginState_RecvPhase()
 	if (kPacketPhase.phase == PHASE_LOGIN)
 	{
 #ifndef _IMPROVED_PACKET_ENCRYPTION_
-		const char* key = LocaleService_GetSecurityKey();
+		const char* key = GetSecurityKey();
 		SetSecurityMode(true, key);
 #endif
 
@@ -287,7 +284,7 @@ bool CGuildMarkDownloader::__LoginState_RecvPhase()
 	}
 
 	return true;
-}			 
+}
 
 // MARK_BUG_FIX
 bool CGuildMarkDownloader::__SendMarkIDXList()

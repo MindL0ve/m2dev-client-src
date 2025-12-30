@@ -15,7 +15,7 @@ BOOL HAIR_COLOR_ENABLE=FALSE;
 BOOL USE_ARMOR_SPECULAR=FALSE;
 BOOL RIDE_HORSE_ENABLE=TRUE;
 const float c_fDefaultRotationSpeed = 1200.0f;
-const float c_fDefaultHorseRotationSpeed = 300.0f;
+const float c_fDefaultHorseRotationSpeed = 1800.0f;
 
 
 bool IsWall(unsigned race)
@@ -2113,11 +2113,28 @@ void CInstanceBase::SetPartyMemberFlag(bool bFlag)
 
 void CInstanceBase::SetStateFlags(DWORD dwStateFlags)
 {
-	if (dwStateFlags & ADD_CHARACTER_STATE_KILLER)
-		SetKiller(TRUE);
-	else
-		SetKiller(FALSE);
+	// MR-4: Fix PK Mode Bug
+	// Prevent killer mode for same-guild attacks in GUILD PK mode
+	bool skipKiller = false;
+				   
 
+	if ((dwStateFlags & ADD_CHARACTER_STATE_KILLER) && PK_MODE_GUILD == GetPKMode()) {
+		CPythonPlayer& rkPlayer = CPythonPlayer::Instance();
+		DWORD myGuildID = GetGuildID();
+		DWORD mainGuildID = rkPlayer.GetGuildID();
+
+		if (myGuildID != 0 && myGuildID == mainGuildID) {
+			skipKiller = true;
+		}
+	}
+
+	if (!skipKiller) {
+		if (dwStateFlags & ADD_CHARACTER_STATE_KILLER)
+			SetKiller(TRUE);
+		else
+			SetKiller(FALSE);
+	}
+	// MR-4: -- END OF -- Fix PK Mode Bug
 	if (dwStateFlags & ADD_CHARACTER_STATE_PARTY)
 		SetPartyMemberFlag(TRUE);
 	else
@@ -2238,10 +2255,20 @@ bool CInstanceBase::IsAttackableInstance(CInstanceBase& rkInstVictim)
 				if (IsPVPInstance(rkInstVictim))
 					return true;
 
+				// MR-4: Fix PK Mode Bug
 				if (PK_MODE_REVENGE == GetPKMode())
+				{
 					if (!IAbstractPlayer::GetSingleton().IsSamePartyMember(GetVirtualID(), rkInstVictim.GetVirtualID()))
-						if (IsConflictAlignmentInstance(rkInstVictim))
+					{
+						if (
+							(GetGuildID() == 0 || GetGuildID() != rkInstVictim.GetGuildID()) &&
+							IsConflictAlignmentInstance(rkInstVictim) &&
+							rkInstVictim.GetAlignment() < 0
+						)
 							return true;
+					}
+				}
+				// MR-4: -- END OF -- Fix PK Mode Bug
 			}
 			else
 			{

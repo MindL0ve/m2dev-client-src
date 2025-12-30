@@ -230,7 +230,6 @@ class CPythonApplication : public CMSApplication, public CInputKeyboard, public 
 		void RunIMEReturnEvent();
 		void RunPressExitKey();
 
-		void RunIMEChangeCodePage();
 		void RunIMEOpenCandidateListEvent();
 		void RunIMECloseCandidateListEvent();
 		void RunIMEOpenReadingWndEvent();
