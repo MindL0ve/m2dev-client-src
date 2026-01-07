@@ -1081,50 +1081,92 @@ PyObject* appReloadLocaleConfig(PyObject* poSelf, PyObject* poArgs)
 
 PyObject* appReloadLocale(PyObject* poSelf, PyObject* poArgs)
 {
-	// Comprehensive locale reload - updates config, reloads data, and forces Python module reload
+	/**
+	 * Multi-language hot-reload system
+	 *
+	 * Reloads all locale-dependent data when the user changes language:
+	 * 1. Reloads config/locale.cfg to get new locale path
+	 * 2. Reloads C++ locale data (item_proto, mob_proto, etc.)
+	 * 3. Calls Python modules to reload locale text files
+	 *
+	 * Returns 1 on success, 0 on failure
+	 */
 
-	TraceError("=== Starting Locale Reload ===");
-
+	// Step 1: Reload config to update locale path
 	LoadConfig("config/locale.cfg");
-	TraceError("LoadConfig complete, new locale path: %s", GetLocalePath());
 
+	// Step 2: Reload C++ locale-dependent data (item_proto, mob_proto, etc.)
 	if (!LoadLocaleData(GetLocalePath()))
 	{
-		TraceError("LoadLocaleData FAILED for path: %s", GetLocalePath());
-		return Py_BuildValue("i", 0); // Return False on failure
+		// TraceError("app.ReloadLocale: Failed to load C++ locale data from %s", GetLocalePath());
+		return Py_BuildValue("i", 0);
 	}
-	TraceError("LoadLocaleData succeeded");
 
+	// Step 3: Reload Python locale text files
 	PyObject* modulesDict = PyImport_GetModuleDict();
-	TraceError("Got modules dict: %p, is dict: %d", modulesDict, modulesDict ? PyDict_Check(modulesDict) : 0);
-
-	if (modulesDict && PyDict_Check(modulesDict))
+	if (!modulesDict || !PyDict_Check(modulesDict))
 	{
-		// List of locale-related modules to clear from cache
-		const char* modulesToReload[] = {
-			"localeInfo",
-			"localeinfo",
-			"uiScriptLocale",
-			"uiscriptlocale",
-			"serverInfo",
-			"serverinfo",
-			NULL
-		};
+		// TraceError("app.ReloadLocale: Failed to get Python modules dictionary");
+		return Py_BuildValue("i", 0);
+	}
 
-		for (int i = 0; modulesToReload[i] != NULL; i++)
+	// Step 3a: Reload localeInfo module (locale_game.txt)
+	PyObject* localeInfoModule = PyDict_GetItemString(modulesDict, "localeinfo");
+	if (!localeInfoModule)
+		localeInfoModule = PyDict_GetItemString(modulesDict, "localeInfo");
+
+	if (localeInfoModule && PyModule_Check(localeInfoModule))
+	{
+		if (PyObject_HasAttrString(localeInfoModule, "LoadLocaleData"))
 		{
-			PyObject* moduleName = PyString_FromString(modulesToReload[i]);
-			if (PyDict_Contains(modulesDict, moduleName))
+			PyObject* loadFunc = PyObject_GetAttrString(localeInfoModule, "LoadLocaleData");
+			if (loadFunc && PyCallable_Check(loadFunc))
 			{
-				TraceError("Removing module from cache: %s", modulesToReload[i]);
-				PyDict_DelItem(modulesDict, moduleName);
+				PyObject* result = PyObject_CallObject(loadFunc, NULL);
+				if (result)
+					Py_DECREF(result);
+				else
+				{
+					PyErr_Print();
+					// TraceError("app.ReloadLocale: localeInfo.LoadLocaleData() failed");
+				}
+				Py_DECREF(loadFunc);
 			}
-			Py_DECREF(moduleName);
 		}
 	}
 
-	TraceError("=== Locale Reload Complete ===");
-	return Py_BuildValue("i", 1); // Return True on success
+	// Step 3b: Reload uiScriptLocale module (locale_interface.txt)
+	PyObject* uiScriptLocaleModule = NULL;
+	const char* uiScriptModuleNames[] = {"uiscriptlocale", "uiScriptLocale", NULL};
+
+	for (int i = 0; uiScriptModuleNames[i] != NULL; i++)
+	{
+		uiScriptLocaleModule = PyDict_GetItemString(modulesDict, uiScriptModuleNames[i]);
+		if (uiScriptLocaleModule)
+			break;
+	}
+
+	if (uiScriptLocaleModule && PyModule_Check(uiScriptLocaleModule))
+	{
+		if (PyObject_HasAttrString(uiScriptLocaleModule, "LoadLocaleData"))
+		{
+			PyObject* loadFunc = PyObject_GetAttrString(uiScriptLocaleModule, "LoadLocaleData");
+			if (loadFunc && PyCallable_Check(loadFunc))
+			{
+				PyObject* result = PyObject_CallObject(loadFunc, NULL);
+				if (result)
+					Py_DECREF(result);
+				else
+				{
+					PyErr_Print();
+					// TraceError("app.ReloadLocale: uiScriptLocale.LoadLocaleData() failed");
+				}
+				Py_DECREF(loadFunc);
+			}
+		}
+	}
+
+	return Py_BuildValue("i", 1);
 }
 
 void initapp()
