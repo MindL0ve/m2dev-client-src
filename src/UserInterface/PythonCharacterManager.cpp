@@ -422,11 +422,24 @@ bool CPythonCharacterManager::IsDeadVID(DWORD dwVID)
 	return false;
 }
 
+// let's sort character instances by their distance to the camera
+// to avoid overdrawing
 struct LessCharacterInstancePtrRenderOrder
 {
+	D3DXVECTOR3 v3CameraPosition;
 	bool operator() (CInstanceBase* pkLeft, CInstanceBase* pkRight)
 	{
-		return pkLeft->LessRenderOrder(pkRight);		
+		D3DXVECTOR3 v3Left, v3Right;
+		pkLeft->NEW_GetPixelPosition(&v3Left);
+		pkRight->NEW_GetPixelPosition(&v3Right);
+
+		v3Left.y *= -1;
+		v3Right.y *= -1;
+
+		D3DXVECTOR3 v3LeftDiff = v3Left - v3CameraPosition;
+		D3DXVECTOR3 v3RightDiff = v3Right - v3CameraPosition;
+
+		return D3DXVec3Dot(&v3LeftDiff, &v3LeftDiff) < D3DXVec3Dot(&v3RightDiff, &v3RightDiff);
 	}
 };
 
@@ -459,12 +472,19 @@ void CPythonCharacterManager::__RenderSortedAliveActorList()
 	static std::vector<CInstanceBase*> s_kVct_pkInstAliveSort;
 	s_kVct_pkInstAliveSort.clear();
 
+	CCamera* pCamera = CCameraManager::instance().GetCurrentCamera();
+	if (!pCamera)
+		return;
+
 	TCharacterInstanceMap& rkMap_pkInstAlive=m_kAliveInstMap;
 	TCharacterInstanceMap::iterator i;
 	for (i=rkMap_pkInstAlive.begin(); i!=rkMap_pkInstAlive.end(); ++i)
 		s_kVct_pkInstAliveSort.push_back(i->second);
 
-	std::sort(s_kVct_pkInstAliveSort.begin(), s_kVct_pkInstAliveSort.end(), LessCharacterInstancePtrRenderOrder());
+	LessCharacterInstancePtrRenderOrder fSortFunc;
+	fSortFunc.v3CameraPosition = pCamera->GetEye();
+
+	std::sort(s_kVct_pkInstAliveSort.begin(), s_kVct_pkInstAliveSort.end(), fSortFunc);
 	std::for_each(s_kVct_pkInstAliveSort.begin(), s_kVct_pkInstAliveSort.end(), FCharacterInstanceRender());
 	std::for_each(s_kVct_pkInstAliveSort.begin(), s_kVct_pkInstAliveSort.end(), FCharacterInstanceRenderTrace());
 }
@@ -474,12 +494,19 @@ void CPythonCharacterManager::__RenderSortedDeadActorList()
 	static std::vector<CInstanceBase*> s_kVct_pkInstDeadSort;
 	s_kVct_pkInstDeadSort.clear();
 
+	CCamera* pCamera = CCameraManager::instance().GetCurrentCamera();
+	if (!pCamera)
+		return;
+
 	TCharacterInstanceList& rkLst_pkInstDead=m_kDeadInstList;
 	TCharacterInstanceList::iterator i;
 	for (i=rkLst_pkInstDead.begin(); i!=rkLst_pkInstDead.end(); ++i)
 		s_kVct_pkInstDeadSort.push_back(*i);
 
-	std::sort(s_kVct_pkInstDeadSort.begin(), s_kVct_pkInstDeadSort.end(), LessCharacterInstancePtrRenderOrder());
+	LessCharacterInstancePtrRenderOrder fSortFunc;
+	fSortFunc.v3CameraPosition = pCamera->GetEye();
+
+	std::sort(s_kVct_pkInstDeadSort.begin(), s_kVct_pkInstDeadSort.end(), fSortFunc);
 	std::for_each(s_kVct_pkInstDeadSort.begin(), s_kVct_pkInstDeadSort.end(), FCharacterInstanceRender());
 
 }
