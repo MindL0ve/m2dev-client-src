@@ -2527,16 +2527,6 @@ typedef struct packet_state
 	TPixelPosition	kPPos;
 } TPacketCCState;
 
-// AUTOBAN
-typedef struct packet_autoban_quiz
-{
-    uint8_t bHeader;
-	uint8_t bDuration;
-    uint8_t bCaptcha[64*32];
-    char szQuiz[256];
-} TPacketGCAutoBanQuiz;
-// END_OF_AUTOBAN
-
 #ifdef _IMPROVED_PACKET_ENCRYPTION_
 struct TPacketKeyAgreement
 {
