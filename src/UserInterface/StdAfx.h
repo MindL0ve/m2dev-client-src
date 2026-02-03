@@ -35,7 +35,6 @@ enum
 	PLAYER_NAME_MAX_LEN = 12,
 };
 
-void initudp();
 void initapp();
 void initime();
 void initsystem();
@@ -51,7 +50,6 @@ void initPlayer();
 void initServerStateChecker();
 void initTrade();
 void initMiniMap();
-void initProfiler();
 void initEvent();
 void initeffect();
 void initsnd();

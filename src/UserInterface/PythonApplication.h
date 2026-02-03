@@ -2,7 +2,6 @@
 
 #include "eterLib/MSApplication.h"
 #include "eterLib/Input.h"
-#include "eterLib/Profiler.h"
 #include "eterLib/GrpDevice.h"
 #include "eterLib/NetDevice.h"
 #include "eterLib/GrpLightManager.h"

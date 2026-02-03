@@ -257,7 +257,6 @@ bool CPythonApplication::Process()
 {
 	ELTimer_SetFrameMSec();
 
-	// 	m_Profiler.Clear();
 	DWORD dwStart = ELTimer_GetMSec();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -635,7 +634,6 @@ bool CPythonApplication::Process()
 	++s_dwUpdateFrameCount;
 
 	s_uiLoad += ELTimer_GetMSec() - dwStart;
-	//m_Profiler.ProfileByScreen();	
 	return true;
 }
 

@@ -222,7 +222,6 @@ bool RunMainScript(CPythonLauncher& pyLauncher, const char* lpCmdLine)
 	initgrpText();
 	initwndMgr();
 
-	initudp();
 	initapp();
 	initsystem();
 	initchr();
@@ -235,7 +234,6 @@ bool RunMainScript(CPythonLauncher& pyLauncher, const char* lpCmdLine)
 	initTextTail();
 	initnet();
 	initMiniMap();
-	initProfiler();
 	initEvent();
 	initeffect();
 	initfly();
