@@ -522,8 +522,6 @@ typedef struct command_attack
 	uint8_t	header;
 	uint8_t	bType;			// 공격 유형
 	uint32_t	dwVictimVID;	// 적 VID
-	uint8_t	bCRCMagicCubeProcPiece;
-	uint8_t	bCRCMagicCubeFilePiece;
 } TPacketCGAttack;
 
 typedef struct command_chat
@@ -991,15 +989,6 @@ typedef struct command_client_version2
 	char filename[32+1];
 	char timestamp[32+1];
 } TPacketCGClientVersion2;
-
-typedef struct command_crc_report
-{
-	uint8_t header;
-	uint8_t byPackMode;
-	uint32_t dwBinaryCRC32;
-	uint32_t dwProcessCRC32;
-	uint32_t dwRootPackCRC32;
-} TPacketCGCRCReport;
 
 enum EPartyExpDistributionType
 {

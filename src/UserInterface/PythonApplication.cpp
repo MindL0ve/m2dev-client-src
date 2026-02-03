@@ -8,9 +8,6 @@
 #include "resource.h"
 #include "PythonApplication.h"
 #include "PythonCharacterManager.h"
-
-#include "ProcessScanner.h"
-
 #include <utf8.h>
 
 extern void GrannyCreateSharedDeformBuffer();

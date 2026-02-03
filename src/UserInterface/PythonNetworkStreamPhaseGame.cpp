@@ -24,8 +24,6 @@
 #include "AbstractCharacterManager.h"
 #include "InstanceBase.h"
 
-#include "ProcessCRC.h"
-
 BOOL gs_bEmpireLanuageEnable = TRUE;
 
 void CPythonNetworkStream::__RefreshAlignmentWindow()
@@ -2685,32 +2683,13 @@ bool CPythonNetworkStream::SendAttackPacket(UINT uMotAttack, DWORD dwVIDVictim)
 	kPacketAtk.bType = uMotAttack;
 	kPacketAtk.dwVictimVID = dwVIDVictim;
 
-	if (!SendSpecial(sizeof(kPacketAtk), &kPacketAtk))
+	if (!Send(sizeof(kPacketAtk), &kPacketAtk))
 	{
 		Tracen("Send Battle Attack Packet Error");
 		return false;
 	}
 
 	return SendSequence();
-}
-
-bool CPythonNetworkStream::SendSpecial(int nLen, void * pvBuf)
-{
-	BYTE bHeader = *(BYTE *) pvBuf;
-
-	switch (bHeader)
-	{
-		case HEADER_CG_ATTACK:
-			{
-				TPacketCGAttack * pkPacketAtk = (TPacketCGAttack *) pvBuf;
-				pkPacketAtk->bCRCMagicCubeProcPiece = GetProcessCRCMagicCubePiece();
-				pkPacketAtk->bCRCMagicCubeFilePiece = GetProcessCRCMagicCubePiece();
-				return Send(nLen, pvBuf);
-			}
-			break;
-	}
-
-	return Send(nLen, pvBuf);
 }
 
 bool CPythonNetworkStream::RecvAddFlyTargetingPacket()
@@ -4325,11 +4304,6 @@ bool CPythonNetworkStream::RecvNPCList()
 		}
 	}
 
-	return true;
-}
-
-bool CPythonNetworkStream::__SendCRCReportPacket()
-{
 	return true;
 }
 
