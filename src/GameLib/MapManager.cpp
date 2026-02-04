@@ -598,7 +598,6 @@ void CMapManager::GetBaseXY(DWORD * pdwBaseX, DWORD * pdwBaseY)
 void CMapManager::__LoadMapInfoVector()
 {
 	TPackFile kFile;
-	if (!CPackManager::Instance().GetFile(m_stAtlasInfoFileName, kFile))
 		if (!CPackManager::Instance().GetFile("AtlasInfo.txt", kFile))
 			return;
 
