@@ -59,7 +59,7 @@ bool CPythonNonPlayer::LoadNonPlayerData(const char * c_szFileName)
 
 		memcpy(pNonPlayerData, pTable, sizeof(TMobTable));
 
-		//TraceError("%d : %s type[%d] color[%d]", pNonPlayerData->dwVnum, pNonPlayerData->szLocaleName, pNonPlayerData->bType, pNonPlayerData->dwMonsterColor);
+		//TraceError("%d : %s type[%d] color[%d]", pNonPlayerData->dwVnum, pNonPlayerData->szName, pNonPlayerData->bType, pNonPlayerData->dwMonsterColor);
 		m_NonPlayerDataMap.insert(TNonPlayerDataMap::value_type(pNonPlayerData->dwVnum, pNonPlayerData));
 	}
 
@@ -74,7 +74,7 @@ bool CPythonNonPlayer::GetName(DWORD dwVnum, const char ** c_pszName)
 	if (!p)
 		return false;
 
-	*c_pszName = p->szLocaleName;
+	*c_pszName = p->szName;
 
 	return true;
 }
@@ -138,7 +138,7 @@ const char*	CPythonNonPlayer::GetMonsterName(DWORD dwVnum)
 		return sc_szEmpty;
 	}
 
-	return c_pTable->szLocaleName;
+	return c_pTable->szName;
 }
 
 DWORD CPythonNonPlayer::GetMonsterColor(DWORD dwVnum)

@@ -77,7 +77,6 @@ typedef struct SMobTable
 {
 	DWORD	dwVnum;
 	char	szName[CHARACTER_NAME_MAX_LEN + 1];
-	char	szLocaleName[CHARACTER_NAME_MAX_LEN + 1];
 
 	BYTE	bType;			// Monster, NPC
 	BYTE	bRank;			// PAWN, KNIGHT, KING
@@ -181,7 +180,6 @@ typedef struct
 	DWORD       dwVnum;
 	DWORD		dwVnumRange;
 	char        szName[ITEM_NAME_MAX_LEN + 1];
-	char	szLocaleName[ITEM_NAME_MAX_LEN + 1];
 	BYTE	bType;
 	BYTE	bSubType;
 
@@ -221,16 +219,13 @@ bool Set_Proto_Mob_Table(TMobTable *mobTable, cCsvTable &csvTable, std::map<int,
 	int col = 0;
 
 	mobTable->dwVnum               = atoi(csvTable.AsStringByIndex(col++));
-	strncpy(mobTable->szName, csvTable.AsStringByIndex(col++), CHARACTER_NAME_MAX_LEN);
-	//���� ������ �����ϸ� ������ �о��.
-	map<int,const char*>::iterator it;
-	it = nameMap.find(mobTable->dwVnum);
-	if (it != nameMap.end()) {
-		const char * localeName = it->second;
-		strncpy(mobTable->szLocaleName, localeName, sizeof (mobTable->szLocaleName));
-	} else {	//���� ������ ������, �ѱ��� �״�� ���.
-		strncpy(mobTable->szLocaleName, mobTable->szName, sizeof (mobTable->szLocaleName));
-	}
+    /*======== NAME =======*/
+    strncpy(mobTable->szName, csvTable.AsStringByIndex(col++), CHARACTER_NAME_MAX_LEN);
+    // Overwrite name if localized name exists
+    if (map<int, const char*>::iterator it = nameMap.find(mobTable->dwVnum); it != nameMap.end())
+    {
+        strncpy(mobTable->szName, it->second, CHARACTER_NAME_MAX_LEN);
+    }
 	//4. RANK
 	int rankValue = get_Mob_Rank_Value(csvTable.AsStringByIndex(col++));
 	mobTable->bRank                = rankValue;
@@ -437,7 +432,6 @@ bool BuildMobTable(const char* nameFile)
 
 			mob_table->dwVnum               = tempTable->dwVnum;
 			strncpy(mob_table->szName, tempTable->szName, CHARACTER_NAME_MAX_LEN);
-			strncpy(mob_table->szLocaleName, tempTable->szLocaleName, CHARACTER_NAME_MAX_LEN);
 			mob_table->bRank                = tempTable->bRank;
 			mob_table->bType                = tempTable->bType;
 			mob_table->bBattleType          = tempTable->bBattleType;
@@ -477,7 +471,7 @@ bool BuildMobTable(const char* nameFile)
 
 		}
 
-		fprintf(stdout, "MOB #%-5d %-16s %-16s sight: %u color %u[%s]\n", mob_table->dwVnum, mob_table->szName, mob_table->szLocaleName, mob_table->wAggressiveSight, mob_table->dwMobColor, 0);
+		fprintf(stdout, "MOB #%-5d %-16s sight: %u color %u[%s]\n", mob_table->dwVnum, mob_table->szName, mob_table->wAggressiveSight, mob_table->dwMobColor, 0);
 
 		//�¿� vnum �߰�
 		vnumSet.insert(mob_table->dwVnum);
@@ -516,7 +510,7 @@ bool BuildMobTable(const char* nameFile)
 				fprintf(stderr, "�� ������ ���̺� ���� ����.\n");			
 			}
 
-			fprintf(stdout, "[New]MOB #%-5d %-16s sight: %u color %u[%s]\n", mob_table->dwVnum, mob_table->szLocaleName, mob_table->wAggressiveSight, mob_table->dwMobColor, test_data.AsStringByIndex(54));
+			fprintf(stdout, "[New]MOB #%-5d %-16s sight: %u color %u[%s]\n", mob_table->dwVnum, mob_table->szName, mob_table->wAggressiveSight, mob_table->dwMobColor, test_data.AsStringByIndex(54));
 
 			//�¿� vnum �߰�
 			vnumSet.insert(mob_table->dwVnum);
@@ -723,15 +717,12 @@ bool Set_Proto_Item_Table(TClientItemTable *itemTable, cCsvTable &csvTable, std:
 	int col = 1;
 
 	strncpy(itemTable->szName, csvTable.AsStringByIndex(col++), ITEM_NAME_MAX_LEN);
-	//���� ������ �����ϸ� ������ �о��.
-	map<int,const char*>::iterator it;
-	it = nameMap.find(itemTable->dwVnum);
-	if (it != nameMap.end()) {
-		const char * localeName = it->second;
-		strncpy(itemTable->szLocaleName, localeName, sizeof(itemTable->szLocaleName));
-	} else { //���� ������ �������� ������ �ѱ۷�..
-		strncpy(itemTable->szLocaleName, itemTable->szName, sizeof(itemTable->szLocaleName));
-	}
+    // Overwrite name with localized name if present in item_names.txt
+    auto it = nameMap.find(itemTable->dwVnum);
+    if (it != nameMap.end())
+    {
+        strncpy(itemTable->szName, it->second, ITEM_NAME_MAX_LEN);
+    }
 	itemTable->bType = get_Item_Type_Value(csvTable.AsStringByIndex(col++));
 	itemTable->bSubType = get_Item_SubType_Value(itemTable->bType, csvTable.AsStringByIndex(col++));
 	itemTable->bSize = atoi(csvTable.AsStringByIndex(col++));
@@ -918,7 +909,6 @@ bool BuildItemTable(const char* nameFile)
 
 			item_table->dwVnum = tempTable->dwVnum;
 			strncpy(item_table->szName, tempTable->szName, ITEM_NAME_MAX_LEN);
-			strncpy(item_table->szLocaleName, tempTable->szLocaleName, ITEM_NAME_MAX_LEN);
 			item_table->bType = tempTable->bType;
 			item_table->bSubType = tempTable->bSubType;
 			item_table->bSize = tempTable->bSize;
@@ -956,10 +946,9 @@ bool BuildItemTable(const char* nameFile)
 		}
 
 
-		fprintf(stdout, "ITEM #%-5u %-24s %-24s VAL: %ld %ld %ld %ld %ld %ld WEAR %u ANTI %u IMMUNE %u REFINE %u\n",
+		fprintf(stdout, "ITEM #%-5u %-24s VAL: %ld %ld %ld %ld %ld %ld WEAR %u ANTI %u IMMUNE %u REFINE %u\n",
 				item_table->dwVnum,
 				item_table->szName,
-				item_table->szLocaleName,
 				item_table->alValues[0],
 				item_table->alValues[1],
 				item_table->alValues[2],
@@ -1001,10 +990,9 @@ bool BuildItemTable(const char* nameFile)
 				fprintf(stderr, "�� ������ ���̺� ���� ����.\n");			
 			}
 
-			fprintf(stdout, "[NEW]ITEM #%-5u %-24s %-24s VAL: %ld %ld %ld %ld %ld %ld WEAR %u ANTI %u IMMUNE %u REFINE %u\n",
+			fprintf(stdout, "[NEW]ITEM #%-5u %-24s VAL: %ld %ld %ld %ld %ld %ld WEAR %u ANTI %u IMMUNE %u REFINE %u\n",
 					item_table->dwVnum,
 					item_table->szName,
-					item_table->szLocaleName,
 					item_table->alValues[0],
 					item_table->alValues[1],
 					item_table->alValues[2],
