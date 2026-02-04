@@ -265,13 +265,10 @@ class CPythonNetworkStream : public CNetworkStream, public CSingleton<CPythonNet
 		bool RecvHandshakePacket();
 		bool RecvHandshakeOKPacket();
 
-		bool RecvHybridCryptKeyPacket();
-		bool RecvHybridCryptSDBPacket();
-#ifdef _IMPROVED_PACKET_ENCRYPTION_
-		bool RecvKeyAgreementPacket();
-		bool RecvKeyAgreementCompletedPacket();
+		// Secure key exchange (libsodium/XChaCha20-Poly1305)
+		bool RecvKeyChallenge();
+		bool RecvKeyComplete();
 
-#endif
 		// ETC
 		DWORD GetMainActorVID();
 		DWORD GetMainActorRace();
@@ -294,9 +291,7 @@ class CPythonNetworkStream : public CNetworkStream, public CSingleton<CPythonNet
 		void ClosePhase();
 
 		// Login Phase
-		bool SendLoginPacket(const char * c_szName, const char * c_szPassword);
 		bool SendLoginPacketNew(const char * c_szName, const char * c_szPassword);
-		bool SendDirectEnterPacket(const char * c_szName, const char * c_szPassword, UINT uChrSlot);
 
 		bool SendEnterGame();
 
