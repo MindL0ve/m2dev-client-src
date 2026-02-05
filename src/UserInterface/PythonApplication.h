@@ -40,8 +40,6 @@
 
 #include "ServerStateChecker.h"
 #include "AbstractApplication.h"
-#include "MovieMan.h"
-
 #include <qedit.h>
 
 class CPythonApplication : public CMSApplication, public CInputKeyboard, public IAbstractApplication
@@ -248,13 +246,6 @@ class CPythonApplication : public CMSApplication, public CInputKeyboard, public 
 		bool LoadCameraSetting(const char * c_szFileName);
 
 		void SetForceSightRange(int iRange);
-	
-
-	public:
-		int OnLogoOpen(char* szName);
-		int OnLogoUpdate();
-		void OnLogoRender();
-		void OnLogoClose();
 
 	protected:
 		IGraphBuilder*			m_pGraphBuilder;			// Graph Builder
@@ -271,7 +262,6 @@ class CPythonApplication : public CMSApplication, public CInputKeyboard, public 
 		bool					m_bLogoPlay;
 
 		int						m_nLeft, m_nRight, m_nTop, m_nBottom;
-
 
 	protected:
 		LRESULT WindowProcedure(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam);
@@ -317,7 +307,6 @@ class CPythonApplication : public CMSApplication, public CInputKeyboard, public 
 		CRaceManager				m_RaceManager;
 		CGameEventManager			m_GameEventManager;
 		CItemManager				m_kItemMgr;
-		CMovieMan					m_MovieManager;
 
 		UI::CWindowManager			m_kWndMgr;
 		CEffectManager				m_kEftMgr;

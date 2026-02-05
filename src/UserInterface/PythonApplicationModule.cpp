@@ -1038,36 +1038,6 @@ PyObject * appSetGuildMarkPath(PyObject * poSelf, PyObject * poArgs)
 	return Py_BuildNone();
 }
 
-PyObject* appLogoOpen(PyObject* poSelf, PyObject* poArgs)
-{
-	char* szName;
-	if (!PyTuple_GetString(poArgs, 0, &szName))
-		return Py_BuildException();
-
-	int nIsSuccess = 1;
-	CMovieMan::Instance().PlayLogo(szName);
-
-	return Py_BuildValue("i", nIsSuccess);
-}
-
-PyObject* appLogoUpdate(PyObject* poSelf, PyObject* poArgs)
-{
-	int nIsRun = 0;
-	return Py_BuildValue("i", nIsRun);
-}
-
-PyObject* appLogoRender(PyObject* poSelf, PyObject* poArgs)
-{
-	//CPythonApplication::Instance().OnLogoRender();
-	return Py_BuildNone();
-}
-
-PyObject* appLogoClose(PyObject* poSelf, PyObject* poArgs)
-{
-	//CPythonApplication::Instance().OnLogoClose();
-	return Py_BuildNone();
-}
-
 PyObject* appIsRTL(PyObject* poSelf, PyObject* poArgs)
 {
 	return Py_BuildValue("i", IsRTL() ? 1 : 0);
@@ -1292,11 +1262,6 @@ void initapp()
 		{ "IsEnableTestServerFlag",		appIsEnableTestServerFlag,		METH_VARARGS },
 
 		{ "SetGuildMarkPath",			appSetGuildMarkPath,			METH_VARARGS },
-
-		{ "OnLogoUpdate",				appLogoUpdate,					METH_VARARGS },
-		{ "OnLogoRender",				appLogoRender,					METH_VARARGS },
-		{ "OnLogoOpen",					appLogoOpen,					METH_VARARGS },
-		{ "OnLogoClose",				appLogoClose,					METH_VARARGS },
 
 		{ "ReloadLocaleConfig",			appReloadLocaleConfig,			METH_VARARGS },
 		{ "ReloadLocale",				appReloadLocale,				METH_VARARGS },
