@@ -254,7 +254,6 @@ enum
 	// END_OF_SUPPORT_BGM
 
     HEADER_GC_SEPCIAL_EFFECT                    = 114,
-	HEADER_GC_NPC_POSITION						= 115,
 
     HEADER_GC_CHARACTER_UPDATE2                 = 117,
     HEADER_GC_LOGIN_KEY                         = 118,
@@ -2253,13 +2252,6 @@ typedef struct SPacketGCSpecialEffect
     uint8_t type;
     uint32_t vid;
 } TPacketGCSpecialEffect;
-
-typedef struct SPacketGCNPCPosition
-{
-    uint8_t header;
-	uint16_t size;
-    uint16_t count;
-} TPacketGCNPCPosition;
 
 struct TNPCPosition
 {

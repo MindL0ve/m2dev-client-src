@@ -807,6 +807,140 @@ void CPythonMiniMap::DeleteTarget(int iID)
 	RemoveWayPoint(iID);
 }
 
+void CPythonMiniMap::__LoadAtlasMarkInfo()
+{
+    ClearAtlasMarkInfo();
+    ClearGuildArea();
+
+    CPythonBackground& rkBG = CPythonBackground::Instance();
+
+    if (!rkBG.IsMapOutdoor())
+    {
+        return;
+    }
+
+    CMapOutdoor& rkMap = rkBG.GetMapOutdoorRef();
+
+    // LOCALE
+    char szAtlasMarkInfoFileName[64 + 1];
+    _snprintf(szAtlasMarkInfoFileName, sizeof(szAtlasMarkInfoFileName), "locale/common/map/%s_point.txt", rkMap.GetName().c_str());
+    // END_OF_LOCALE
+
+    CTokenVectorMap stTokenVectorMap;
+
+    if (!LoadMultipleTextData(szAtlasMarkInfoFileName, stTokenVectorMap))
+    {
+        Tracef(" CPythonMiniMap::__LoadAtlasMarkInfo File Load %s ERROR\n", szAtlasMarkInfoFileName);
+        return;
+    }
+
+    for (DWORD i = 0; i < stTokenVectorMap.size(); ++i)
+    {
+        char szMarkInfoName[32 + 1];
+        _snprintf(szMarkInfoName, sizeof(szMarkInfoName), "%d", i);
+
+        if (!stTokenVectorMap.contains(szMarkInfoName))
+        {
+            continue;
+        }
+
+        const CTokenVector & rVector = stTokenVectorMap[szMarkInfoName];
+
+        /* - ATLAS_MARK_INFO ----------------------------------- */
+        const std::string& c_rstrPositionX = rVector[0].c_str();
+        const std::string& c_rstrPositionY = rVector[1].c_str();
+        const std::string& c_rstrVnum = rVector[2].c_str();
+
+        /* - ATLAS_MARK_INFO [REFACTOR] ------------------------ */
+        const auto c_dwVnum = std::strtoul(c_rstrVnum.c_str(), nullptr, 10);
+        /* ----------------------------------------------------- */
+
+        const CPythonNonPlayer::TMobTable* c_pMobTable = CPythonNonPlayer::Instance().GetTable(c_dwVnum);
+
+        /* - ATLAS_MARK_INFO [REFACTOR] ------------------------ */
+        if (!c_pMobTable)
+        {
+            Tracef(" CPythonMiniMap::__LoadAtlasMarkInfo Can't Find MobTable Vnum[%d]\n", c_dwVnum);
+            continue;
+        }
+
+        TAtlasMarkInfo aAtlasMarkInfo{};
+        aAtlasMarkInfo.m_fX = std::strtof(c_rstrPositionX.c_str(), nullptr);
+        aAtlasMarkInfo.m_fY = std::strtof(c_rstrPositionY.c_str(), nullptr);
+        /* ----------------------------------------------------- */
+
+        aAtlasMarkInfo.m_strText = c_pMobTable->szName;
+
+        if (c_pMobTable->bType == CActorInstance::TYPE_NPC)
+        {
+            aAtlasMarkInfo.m_byType = TYPE_NPC;
+        }
+
+        else if (c_pMobTable->bType == CActorInstance::TYPE_WARP)
+        {
+            aAtlasMarkInfo.m_byType = TYPE_WARP;
+
+            /* - ATLAS_MARK_INFO [REFACTOR] ------------------------ */
+            const auto pos = aAtlasMarkInfo.m_strText.find(' ');
+
+            if (pos != std::string::npos)
+            {
+                aAtlasMarkInfo.m_strText.resize(pos);
+            }
+
+            /* ----------------------------------------------------- */
+
+        }
+
+        else if (c_pMobTable->bType == CActorInstance::TYPE_STONE && c_dwVnum >= 20702 && c_dwVnum <= 20706)
+        {
+            aAtlasMarkInfo.m_byType = TYPE_NPC;
+        }
+
+        /* - ATLAS_MARK_INFO [REFACTOR] ------------------------
+         * [KaptanYosun Dev Note]
+         * Atlas mark positions must be stored as CENTER coordinates.
+         *
+         * The previous implementation subtracted half of the mark size
+         * here, effectively converting the position to top-left space
+         * too early. This caused double-centering during rendering and
+         * resulted in a 1px north-west offset in quest-highlight pixels.
+         *
+         * Centering (subtracting half width/height) is now applied ONLY
+         * at render time, ensuring consistent alignment between:
+         *  - NPC dots
+         *  - Quest highlight pixels
+         *  - Waypoints and target marks
+         *
+         * Rule: store logical positions as center, apply sprite offsets
+         * only in the rendering layer.
+         */
+        aAtlasMarkInfo.m_fScreenX = aAtlasMarkInfo.m_fX / m_fAtlasMaxX * m_fAtlasImageSizeX;
+        aAtlasMarkInfo.m_fScreenY = aAtlasMarkInfo.m_fY / m_fAtlasMaxY * m_fAtlasImageSizeY;
+        /* ----------------------------------------------------- */
+
+
+        switch (aAtlasMarkInfo.m_byType)
+        {
+            case TYPE_NPC:
+                m_AtlasNPCInfoVector.push_back(aAtlasMarkInfo);
+                break;
+
+            case TYPE_WARP:
+                m_AtlasWarpInfoVector.push_back(aAtlasMarkInfo);
+                break;
+
+            /* - ATLAS_MARK_INFO [REFACTOR] ------------------------ */
+            default:
+                Tracef(" CPythonMiniMap::__LoadAtlasMarkInfo Unknown Type[%d] Vnum[%d]\n", c_pMobTable->bType, c_dwVnum);
+                break;
+                /* ----------------------------------------------------- */
+        }
+
+        /* ----------------------------------------------------- */
+    }
+}
+
 bool CPythonMiniMap::LoadAtlas()
 {
 	CPythonBackground& rkBG=CPythonBackground::Instance();
@@ -849,6 +983,8 @@ bool CPythonMiniMap::LoadAtlas()
 
 	m_fAtlasImageSizeX = (float) m_AtlasImageInstance.GetWidth();
 	m_fAtlasImageSizeY = (float) m_AtlasImageInstance.GetHeight();
+
+	__LoadAtlasMarkInfo();
 
 	if (m_bShowAtlas)
 		OpenAtlasWindow();
@@ -919,10 +1055,23 @@ void CPythonMiniMap::RenderAtlas(float fScreenX, float fScreenY)
 
 	STATEMANAGER.SetRenderState(D3DRS_TEXTUREFACTOR, CInstanceBase::GetIndexedNameColor(CInstanceBase::NAMECOLOR_NPC));
 	m_AtlasMarkInfoVectorIterator = m_AtlasNPCInfoVector.begin();
+
+    /* - ATLAS_MARK_INFO [REFACTOR] ------------------------ */
+    const float halfWidth = static_cast<float>(m_WhiteMark.GetWidth()) * 0.5f;
+    const float halfHeight = static_cast<float>(m_WhiteMark.GetHeight()) * 0.5f;
+    /* ----------------------------------------------------- */
+
 	while (m_AtlasMarkInfoVectorIterator != m_AtlasNPCInfoVector.end())
 	{
 		TAtlasMarkInfo & rAtlasMarkInfo = *m_AtlasMarkInfoVectorIterator;
-		m_WhiteMark.SetPosition(rAtlasMarkInfo.m_fScreenX, rAtlasMarkInfo.m_fScreenY);
+
+        /* - ATLAS_MARK_INFO [REFACTOR] ------------------------ */
+        m_WhiteMark.SetPosition(
+            rAtlasMarkInfo.m_fScreenX - halfWidth,
+            rAtlasMarkInfo.m_fScreenY - halfHeight
+        );
+        /* ----------------------------------------------------- */
+
 		m_WhiteMark.Render();
 		++m_AtlasMarkInfoVectorIterator;
 	}
@@ -932,7 +1081,14 @@ void CPythonMiniMap::RenderAtlas(float fScreenX, float fScreenY)
 	while (m_AtlasMarkInfoVectorIterator != m_AtlasWarpInfoVector.end())
 	{
 		TAtlasMarkInfo & rAtlasMarkInfo = *m_AtlasMarkInfoVectorIterator;
-		m_WhiteMark.SetPosition(rAtlasMarkInfo.m_fScreenX, rAtlasMarkInfo.m_fScreenY);
+
+        /* - ATLAS_MARK_INFO [REFACTOR] ------------------------ */
+        m_WhiteMark.SetPosition(
+            rAtlasMarkInfo.m_fScreenX - halfWidth,
+            rAtlasMarkInfo.m_fScreenY - halfHeight
+        );
+        /* ----------------------------------------------------- */
+
 		m_WhiteMark.Render();
 		++m_AtlasMarkInfoVectorIterator;
 	}

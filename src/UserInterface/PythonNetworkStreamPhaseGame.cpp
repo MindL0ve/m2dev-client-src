@@ -523,10 +523,6 @@ void CPythonNetworkStream::GamePhase()
 				ret = RecvSpecialEffect();
 				break;
 
-			case HEADER_GC_NPC_POSITION:
-				ret = RecvNPCList();
-				break;
-
 			case HEADER_GC_CHANNEL:
 				ret = RecvChannelPacket();
 				break;
@@ -4224,36 +4220,6 @@ bool CPythonNetworkStream::RecvRefineInformationPacketNew()
 														rkRefineTable.prob,
 														kRefineInfoPacket.type);
 #endif
-
-	return true;
-}
-
-bool CPythonNetworkStream::RecvNPCList()
-{
-	TPacketGCNPCPosition kNPCPosition;
-	if (!Recv(sizeof(kNPCPosition), &kNPCPosition))
-		return false;
-
-	assert(int(kNPCPosition.size)-sizeof(kNPCPosition) == kNPCPosition.count*sizeof(TNPCPosition) && "HEADER_GC_NPC_POSITION");
-
-	CPythonMiniMap::Instance().ClearAtlasMarkInfo();
-
-	for (int i = 0; i < kNPCPosition.count; ++i)
-	{
-		TNPCPosition NPCPosition;
-		if (!Recv(sizeof(TNPCPosition), &NPCPosition))
-			return false;
-
-		const char* c_szName = nullptr;
-		if (CPythonNonPlayer::Instance().GetName(NPCPosition.dwVnum, &c_szName))
-		{
-			CPythonMiniMap::Instance().RegisterAtlasMark(NPCPosition.bType, c_szName, NPCPosition.x, NPCPosition.y);
-		}
-		else
-		{
-			CPythonMiniMap::Instance().RegisterAtlasMark(NPCPosition.bType, NPCPosition.name, NPCPosition.x, NPCPosition.y);
-		}
-	}
 
 	return true;
 }

@@ -530,7 +530,6 @@ class CPythonNetworkStream : public CNetworkStream, public CSingleton<CPythonNet
 		bool RecvDragonSoulRefine();
 
 		// MiniMap Info
-		bool RecvNPCList();
 		bool RecvLandPacket();
 		bool RecvTargetCreatePacket();
 		bool RecvTargetCreatePacketNew();

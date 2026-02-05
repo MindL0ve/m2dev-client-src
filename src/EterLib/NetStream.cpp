@@ -507,7 +507,6 @@ const char * GetRecvHeaderName(BYTE header)
 		stringList[112] = "HEADER_GC_CHANGE_SKILL_GROUP";
 		stringList[113] = "HEADER_GC_MAIN_CHARACTER_NEW";
 		stringList[114] = "HEADER_GC_USE_POTION";
-		stringList[115] = "HEADER_GC_NPC_POSITION";
 		stringList[117] = "HEADER_GC_CHARACTER_UPDATE2";
 		stringList[118] = "HEADER_GC_LOGIN_KEY";
 		stringList[119] = "HEADER_GC_REFINE_INFORMATION_NEW";
