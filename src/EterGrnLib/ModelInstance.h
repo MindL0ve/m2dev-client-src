@@ -1,6 +1,5 @@
 #pragma once
 
-//#define CACHE_DEFORMED_VERTEX
 #include "Eterlib/GrpImage.h"
 #include "Eterlib/GrpCollisionObject.h"
 

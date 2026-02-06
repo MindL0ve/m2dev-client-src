@@ -849,14 +849,6 @@ bool CPythonNetworkStream::RecvSpecialEffect()
 			effect = CInstanceBase::EFFECT_FR_SUCCESS;
 			bAttachEffect = false ;
 			break;
-		case SE_LEVELUP_ON_14_FOR_GERMANY:	//레벨업 14일때 ( 독일전용 )
-			effect = CInstanceBase::EFFECT_LEVELUP_ON_14_FOR_GERMANY;
-			bAttachEffect = false ;
-			break;
-		case SE_LEVELUP_UNDER_15_FOR_GERMANY: //레벨업 15일때 ( 독일전용 )
-			effect = CInstanceBase::EFFECT_LEVELUP_UNDER_15_FOR_GERMANY;
-			bAttachEffect = false ;
-			break;
 		case SE_PERCENT_DAMAGE1:
 			effect = CInstanceBase::EFFECT_PERCENT_DAMAGE1;
 			break;

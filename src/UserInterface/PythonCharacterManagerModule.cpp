@@ -826,8 +826,6 @@ void initchrmgr()
 	PyModule_AddIntConstant(poModule, "EFFECT_SUCCESS",				CInstanceBase::EFFECT_SUCCESS) ;
 	PyModule_AddIntConstant(poModule, "EFFECT_FAIL",				CInstanceBase::EFFECT_FAIL) ;
 	PyModule_AddIntConstant(poModule, "EFFECT_FR_SUCCESS",				CInstanceBase::EFFECT_FR_SUCCESS) ;	
-	PyModule_AddIntConstant(poModule, "EFFECT_LEVELUP_ON_14_FOR_GERMANY", CInstanceBase::EFFECT_LEVELUP_ON_14_FOR_GERMANY );	//레벨업 14일때 ( 독일전용 )
-	PyModule_AddIntConstant(poModule, "EFFECT_LEVELUP_UNDER_15_FOR_GERMANY", CInstanceBase::EFFECT_LEVELUP_UNDER_15_FOR_GERMANY );//레벨업 15일때 ( 독일전용 )
 	PyModule_AddIntConstant(poModule, "EFFECT_PERCENT_DAMAGE1",				CInstanceBase::EFFECT_PERCENT_DAMAGE1);	
 	PyModule_AddIntConstant(poModule, "EFFECT_PERCENT_DAMAGE2",				CInstanceBase::EFFECT_PERCENT_DAMAGE2);	
 	PyModule_AddIntConstant(poModule, "EFFECT_PERCENT_DAMAGE3",				CInstanceBase::EFFECT_PERCENT_DAMAGE3);
