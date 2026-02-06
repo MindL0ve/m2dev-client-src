@@ -331,13 +331,6 @@ int CGraphicDevice::Create(HWND hWnd, int iHres, int iVres, bool Windowed, int /
 	D3DDISPLAYMODE d3dDisplayMode;
 	ms_lpd3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3dDisplayMode);
 
-	if (Windowed &&
-		strnicmp(d3dAdapterId.Driver, "3dfx", 4) == 0 &&
-		D3DFMT_X8R8G8B8 == d3dDisplayMode.Format)
-	{
-		return CREATE_FORMAT;
-	}
-
 	D3DCAPS9 d3dCaps;
 	ms_lpd3d->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &d3dCaps);
 

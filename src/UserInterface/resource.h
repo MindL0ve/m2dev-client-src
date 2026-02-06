@@ -4,7 +4,6 @@
 //
 #define IDS_APP_NAME                    1
 #define IDS_POSSESSIVE_MORPHENE         2
-#define IDS_WARN_BAD_DRIVER             3
 #define IDS_WARN_NO_TNL                 4
 #define IDS_ERR_CANNOT_READ_FILE        5
 #define IDS_ERR_NOT_LATEST_FILE         6

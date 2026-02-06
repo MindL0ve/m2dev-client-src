@@ -158,7 +158,6 @@ STRINGTABLE
 BEGIN
     IDS_APP_NAME                    "Metin 2"
     IDS_POSSESSIVE_MORPHENE         "'s"
-    IDS_WARN_BAD_DRIVER             "Please update your graphics driver."
     IDS_WARN_NO_TNL                 "Your graphics card does not support 3D TnL hardware acceleration. The game may not run properly."
     IDS_ERR_CANNOT_READ_FILE        "Cannot read %s file"
     IDS_ERR_NOT_LATEST_FILE         "File '%s' is not the latest version. Please launch the patcher."

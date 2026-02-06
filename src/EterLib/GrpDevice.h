@@ -26,9 +26,7 @@ public:
 		CREATE_REFRESHRATE		= (1 << 5),
 		CREATE_ENUM				= (1 << 6), // 2003. 01. 09. myevan 모드 리스트 얻기 실패
 		CREATE_DETECT			= (1 << 7), // 2003. 01. 09. myevan 모드 선택 실패
-		CREATE_NO_TNL			= (1 << 8),
-		CREATE_BAD_DRIVER		= (1 << 9),
-		CREATE_FORMAT			= (1 << 10),
+		CREATE_NO_TNL			= (1 << 8)
 	};
 
 	CGraphicDevice();

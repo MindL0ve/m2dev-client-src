@@ -705,11 +705,6 @@ bool CPythonApplication::CreateDevice(int width, int height, int Windowed, int b
 			TraceError("CreateDevice: GraphicDevice create failed");
 			return false;
 
-		case CGraphicDevice::CREATE_FORMAT:
-			SET_EXCEPTION(CREATE_FORMAT);
-			TraceError("CreateDevice: Change the screen format");
-			return false;
-
 		case CGraphicDevice::CREATE_GET_DEVICE_CAPS:
 			PyErr_SetString(PyExc_RuntimeError, "GetDevCaps failed");
 			TraceError("CreateDevice: GetDevCaps failed");
