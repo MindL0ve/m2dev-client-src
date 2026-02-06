@@ -204,7 +204,6 @@ class CGraphicBase
 		
 		void		SetViewport(DWORD dwX, DWORD dwY, DWORD dwWidth, DWORD dwHeight, float fMinZ, float fMaxZ);
 		static void		GetBackBufferSize(UINT* puWidth, UINT* puHeight);
-		static bool		IsTLVertexClipping();
 		static bool		IsFastTNL();
 		static bool		IsLowTextureMemory();
 		static bool		IsHighTextureMemory();

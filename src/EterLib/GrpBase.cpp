@@ -116,14 +116,6 @@ bool CGraphicBase::IsFastTNL()
 	return false;
 }
 
-bool CGraphicBase::IsTLVertexClipping()
-{
-	if (ms_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_CLIPTLVERTS)
-		return true;
-
-	return false;
-}
-
 void CGraphicBase::GetBackBufferSize(UINT* puWidth, UINT* puHeight)
 {
 	*puWidth=ms_d3dPresentParameter.BackBufferWidth;
